@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import fluxWorkflow from "../../../data/workflows/flux-workflow.json";
-import prompts from "../../../data/prompts.json";
+import { prompts } from "../../data/prompts";
 import { Category, Style } from "../../types/prompts";
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
@@ -72,37 +72,47 @@ async function getImages(
 ): Promise<Buffer | null> {
   return new Promise((resolve, reject) => {
     let currentOutput: Buffer | null = null;
+    let isExecutionComplete = false;
 
     ws.on("message", (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString());
+        console.log("WebSocket message:", message);
 
         if (
           message.type === "executing" &&
           message.data.prompt_id === promptId
         ) {
-          if (message.data.node === null) {
+          if (message.data.node === null && currentOutput) {
+            isExecutionComplete = true;
             ws.close();
             resolve(currentOutput);
           }
+        } else if (message.type === "progress") {
+          console.log("Progress:", message.data);
         }
       } catch {
         // Wenn die Nachricht kein JSON ist, handelt es sich um Bilddaten
         if (data.length > 8) {
           currentOutput = data.slice(8); // Entferne die ersten 8 Bytes (Header)
+          if (isExecutionComplete) {
+            ws.close();
+            resolve(currentOutput);
+          }
         }
       }
     });
 
     ws.on("error", (error: Error) => {
+      console.error("WebSocket error:", error);
       reject(error);
     });
 
-    // Timeout nach 30 Sekunden
+    // Timeout nach 60 Sekunden
     setTimeout(() => {
       ws.close();
       reject(new Error("Timeout beim Warten auf Bilddaten"));
-    }, 30000);
+    }, 60000);
   });
 }
 
@@ -118,7 +128,7 @@ export async function POST(request: Request) {
     ) as ComfyUIWorkflow;
 
     // Hole den vordefinierten Prompt für die Kategorie und den Stil
-    const promptTemplate = prompts[category][style];
+    const promptTemplate = prompts[category].styles[style];
     const prompt = promptTemplate.replace("{word}", word);
 
     // Aktualisiere den Text-Prompt
@@ -131,26 +141,42 @@ export async function POST(request: Request) {
     // Aktualisiere den Noise-Seed für Variation
     workflow["23"].inputs.noise_seed = Math.floor(Math.random() * 1000000);
 
-    // Queue den Prompt und hole die Prompt-ID
+    console.log("Queuing prompt...");
     const { prompt_id } = await queuePrompt(workflow, clientId);
+    console.log("Prompt queued with ID:", prompt_id);
 
     // Verbinde mit dem WebSocket
     const ws = new WebSocket(
       `ws://${process.env.COMFYUI_HOST}:${process.env.COMFYUI_PORT}/ws?clientId=${clientId}`
     );
 
-    // Warte auf die Bilddaten
+    // Warte auf die Verbindung
+    await new Promise<void>((resolve) => {
+      ws.on("open", () => {
+        console.log("WebSocket connected");
+        resolve();
+      });
+    });
+
+    console.log("Waiting for image data...");
     const imageData = await getImages(ws, prompt_id);
 
     if (!imageData) {
       throw new Error("Keine Bilddaten erhalten");
     }
 
+    console.log("Image data received, length:", imageData.length);
+
     // Konvertiere die Bilddaten zu Base64
     const base64ImageData = imageData.toString("base64");
-    const imageUrl = `data:image/png;base64,${base64ImageData}`;
 
-    return NextResponse.json({ imageUrl });
+    // Validiere das Base64-Format
+    if (!base64ImageData || base64ImageData.length === 0) {
+      throw new Error("Ungültige Base64-Bilddaten");
+    }
+
+    console.log("Base64 image data length:", base64ImageData.length);
+    return NextResponse.json({ imageUrl: base64ImageData });
   } catch (error) {
     console.error("Error generating image:", error);
     return NextResponse.json(

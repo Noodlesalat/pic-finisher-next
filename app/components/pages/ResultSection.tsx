@@ -1,5 +1,6 @@
-import Image from "next/image";
 import { motion } from "framer-motion";
+import { useGeneratedImageStore } from "../../store/generatedImageStore";
+import React from "react";
 
 interface ResultSectionProps {
   drawing: string;
@@ -7,6 +8,26 @@ interface ResultSectionProps {
 }
 
 export function ResultSection({ drawing, generatedImage }: ResultSectionProps) {
+  const { generatedImage: storedImage, setGeneratedImage } =
+    useGeneratedImageStore();
+  const drawingSrc = `data:image/png;base64,${drawing}`;
+  const generatedSrc = `data:image/png;base64,${storedImage || generatedImage}`;
+
+  // Speichere das generierte Bild im Store
+  React.useEffect(() => {
+    if (generatedImage) {
+      console.log("Storing generated image, length:", generatedImage.length);
+      setGeneratedImage(generatedImage);
+    }
+  }, [generatedImage, setGeneratedImage]);
+
+  // Debug-Ausgaben
+  React.useEffect(() => {
+    console.log("Drawing length:", drawing?.length);
+    console.log("Generated image length:", generatedImage?.length);
+    console.log("Stored image length:", storedImage?.length);
+  }, [drawing, generatedImage, storedImage]);
+
   return (
     <section>
       <h2 className="text-4xl font-semibold mb-12 text-center">Ergebnis</h2>
@@ -20,8 +41,8 @@ export function ResultSection({ drawing, generatedImage }: ResultSectionProps) {
             Deine Zeichnung
           </h3>
           <div className="flex justify-center">
-            <Image
-              src={drawing}
+            <img
+              src={drawingSrc}
               alt="Gezeichnetes Bild"
               width={512}
               height={512}
@@ -38,12 +59,17 @@ export function ResultSection({ drawing, generatedImage }: ResultSectionProps) {
             KI-generiertes Bild
           </h3>
           <div className="flex justify-center">
-            <Image
-              src={generatedImage}
+            <img
+              src={generatedSrc}
               alt="KI-generiertes Bild"
               width={512}
               height={512}
               className="max-w-full h-auto rounded-lg shadow-lg"
+              onError={(e) => {
+                console.error("Error loading generated image:", e);
+                const imgElement = e.target as HTMLImageElement;
+                console.log("Failed src:", imgElement.src);
+              }}
             />
           </div>
         </motion.div>

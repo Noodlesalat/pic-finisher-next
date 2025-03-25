@@ -7,6 +7,8 @@ import { CategorySelection } from "./components/pages/CategorySelection";
 import { DrawingSection } from "./components/pages/DrawingSection";
 import { ResultSection } from "./components/pages/ResultSection";
 import { Navigation } from "./components/pages/Navigation";
+import { useDrawingStore } from "./store/drawingStore";
+import { useGeneratedImageStore } from "./store/generatedImageStore";
 
 type Step = "category" | "drawing" | "result";
 
@@ -66,6 +68,7 @@ export default function Home() {
     }));
 
     try {
+      console.log("Sending drawing to API...");
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: {
@@ -84,6 +87,15 @@ export default function Home() {
       }
 
       const data = await response.json();
+      console.log(
+        "Received response from API, image length:",
+        data.imageUrl?.length
+      );
+
+      if (!data.imageUrl) {
+        throw new Error("Keine Bilddaten in der Antwort");
+      }
+
       setNavigation((prev) => ({
         ...prev,
         generatedImage: data.imageUrl,
@@ -91,17 +103,23 @@ export default function Home() {
         isGenerating: false,
       }));
     } catch (err) {
+      console.error("Generation error:", err);
       setNavigation((prev) => ({
         ...prev,
         error:
           "Es gab einen Fehler bei der Bildgenerierung. Bitte versuche es erneut.",
         isGenerating: false,
       }));
-      console.error("Generation error:", err);
     }
   };
 
   const handleReset = () => {
+    const { clearDrawing } = useDrawingStore.getState();
+    const { clearGeneratedImage } = useGeneratedImageStore.getState();
+
+    clearDrawing();
+    clearGeneratedImage();
+
     setNavigation({
       step: "category",
       isSlotMachineActive: false,
@@ -116,6 +134,16 @@ export default function Home() {
   };
 
   const handleBack = () => {
+    const { clearDrawing } = useDrawingStore.getState();
+    const { clearGeneratedImage } = useGeneratedImageStore.getState();
+
+    if (navigation.step === "drawing") {
+      clearDrawing();
+    }
+    if (navigation.step === "result") {
+      clearGeneratedImage();
+    }
+
     setNavigation((prev) => ({
       ...prev,
       step: prev.step === "result" ? "drawing" : "category",

@@ -1,12 +1,14 @@
 "use client";
-import { useEffect, useRef, useState, useCallback } from "react";
-import { Undo2, Redo2, Eraser, Paintbrush } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { ColorPicker } from "./ColorPicker";
+import { BackgroundSelector } from "./BackgroundSelector";
+import { Canvas } from "./Canvas";
+import { Toolbar } from "./Toolbar";
+import { useDrawingStore } from "../store/drawingStore";
 
 interface DrawingCanvasProps {
   onDrawingComplete: (base64Image: string) => void;
 }
-
-const QUICK_COLORS = ["#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF"];
 
 type BackgroundType = "white" | "black" | "custom";
 
@@ -21,22 +23,15 @@ const DEFAULT_BACKGROUNDS: Background[] = [
   { type: "black", name: "Schwarz", value: "#000000" },
 ];
 
+const QUICK_COLORS = ["#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF"];
+
 export function DrawingCanvas({ onDrawingComplete }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const cursorCanvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState("#FFFFFF");
   const [brushSize, setBrushSize] = useState(20);
   const [isEraser, setIsEraser] = useState(false);
   const [history, setHistory] = useState<ImageData[]>([]);
   const [currentStep, setCurrentStep] = useState(-1);
-  const [lastPoint, setLastPoint] = useState<{ x: number; y: number } | null>(
-    null
-  );
-  const [cursorPosition, setCursorPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
   const [customColor, setCustomColor] = useState<string | null>(null);
   const [backgrounds, setBackgrounds] =
     useState<Background[]>(DEFAULT_BACKGROUNDS);
@@ -44,232 +39,13 @@ export function DrawingCanvas({ onDrawingComplete }: DrawingCanvasProps) {
     DEFAULT_BACKGROUNDS[0]
   );
 
+  const { drawing: savedDrawing, setDrawing } = useDrawingStore();
+
   const handleColorChange = (newColor: string) => {
     setColor(newColor);
     setIsEraser(false);
     if (!QUICK_COLORS.includes(newColor)) {
       setCustomColor(newColor);
-    }
-  };
-
-  const updateCursor = useCallback(
-    (point: { x: number; y: number } | null) => {
-      const cursorCanvas = cursorCanvasRef.current;
-      if (!cursorCanvas) return;
-
-      const ctx = cursorCanvas.getContext("2d");
-      if (!ctx) return;
-
-      // Lösche den vorherigen Cursor
-      ctx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
-
-      if (!point) return;
-
-      // Zeichne den neuen Cursor
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, brushSize / 2, 0, Math.PI * 2);
-      ctx.strokeStyle = isEraser ? "rgba(0,0,0,0.5)" : color;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Fülle den Cursor bei aktivem Radierer mit Weiß
-      if (isEraser) {
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.fill();
-      }
-    },
-    [brushSize, color, isEraser]
-  );
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const cursorCanvas = cursorCanvasRef.current;
-    if (!canvas || !cursorCanvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Setze die Canvas-Größe
-    canvas.width = 512;
-    canvas.height = 512;
-    cursorCanvas.width = 512;
-    cursorCanvas.height = 512;
-
-    // Initialisiere die Canvas mit weißem Hintergrund
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Speichere den initialen Zustand
-    const initialImageData = ctx.getImageData(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-    setHistory([initialImageData]);
-    setCurrentStep(0);
-  }, []);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Setze die Zeicheneinstellungen
-    ctx.strokeStyle = isEraser ? "#ffffff" : color;
-    ctx.lineWidth = brushSize;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-  }, [color, brushSize, isEraser]);
-
-  useEffect(() => {
-    if (cursorPosition) {
-      updateCursor(cursorPosition);
-    }
-  }, [cursorPosition, updateCursor]);
-
-  const getCanvasPoint = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return null;
-
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
-  };
-
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const point = getCanvasPoint(e);
-    if (!point) return;
-
-    setIsDrawing(true);
-    setLastPoint(point);
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.beginPath();
-    ctx.moveTo(point.x, point.y);
-  };
-
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || !lastPoint) return;
-
-    const point = getCanvasPoint(e);
-    if (!point) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.beginPath();
-    ctx.moveTo(lastPoint.x, lastPoint.y);
-    ctx.lineTo(point.x, point.y);
-    ctx.stroke();
-
-    setLastPoint(point);
-  };
-
-  const stopDrawing = () => {
-    if (!isDrawing) return;
-
-    setIsDrawing(false);
-    setLastPoint(null);
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Speichere den neuen Zustand in der Historie
-    const newImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const newHistory = history.slice(0, currentStep + 1);
-    setHistory([...newHistory, newImageData]);
-    setCurrentStep(currentStep + 1);
-  };
-
-  const undo = () => {
-    if (currentStep > 0) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const newStep = currentStep - 1;
-      ctx.putImageData(history[newStep], 0, 0);
-      setCurrentStep(newStep);
-    }
-  };
-
-  const redo = () => {
-    if (currentStep < history.length - 1) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const newStep = currentStep + 1;
-      ctx.putImageData(history[newStep], 0, 0);
-      setCurrentStep(newStep);
-    }
-  };
-
-  const clearCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Setze den aktuellen Hintergrund
-    if (selectedBackground.type === "custom") {
-      const img = new window.Image();
-      img.src = selectedBackground.value;
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const newImageData = ctx.getImageData(
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-        setHistory([...history, newImageData]);
-        setCurrentStep(currentStep + 1);
-      };
-    } else {
-      ctx.fillStyle = selectedBackground.value;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      const newImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      setHistory([...history, newImageData]);
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const point = getCanvasPoint(e);
-    if (!point) return;
-
-    setCursorPosition(point);
-    if (isDrawing) {
-      draw(e);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setCursorPosition(null);
-    if (isDrawing) {
-      stopDrawing();
     }
   };
 
@@ -303,28 +79,117 @@ export function DrawingCanvas({ onDrawingComplete }: DrawingCanvasProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Speichere den aktuellen Zustand in der Historie
-    const currentImageData = ctx.getImageData(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-    const newHistory = history.slice(0, currentStep + 1);
-    setHistory([...newHistory, currentImageData]);
-    setCurrentStep(currentStep + 1);
-
-    // Setze den neuen Hintergrund
     if (background.type === "custom") {
       const img = new window.Image();
       img.src = background.value;
-      await new Promise<void>((resolve) => {
-        img.onload = () => resolve();
-      });
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const newImageData = ctx.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+        setHistory([newImageData]);
+        setCurrentStep(0);
+      };
     } else {
       ctx.fillStyle = background.value;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const newImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      setHistory([newImageData]);
+      setCurrentStep(0);
+    }
+  };
+
+  // Initialisiere den Canvas beim ersten Laden
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    if (selectedBackground.type === "custom") {
+      const img = new window.Image();
+      img.src = selectedBackground.value;
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const newImageData = ctx.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+        setHistory([newImageData]);
+        setCurrentStep(0);
+      };
+    } else {
+      ctx.fillStyle = selectedBackground.value;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const newImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      setHistory([newImageData]);
+      setCurrentStep(0);
+    }
+  }, [selectedBackground.type, selectedBackground.value]);
+
+  // Lade die gespeicherte Zeichnung, wenn vorhanden
+  useEffect(() => {
+    if (savedDrawing && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        setHistory([imageData]);
+        setCurrentStep(0);
+      };
+      img.src = `data:image/png;base64,${savedDrawing}`;
+    }
+  }, [savedDrawing]);
+
+  const handleUndo = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleRedo = () => {
+    if (currentStep < history.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleClear = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    if (selectedBackground.type === "custom") {
+      const img = new window.Image();
+      img.src = selectedBackground.value;
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const newImageData = ctx.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+        setHistory([...history, newImageData]);
+        setCurrentStep(currentStep + 1);
+      };
+    } else {
+      ctx.fillStyle = selectedBackground.value;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const newImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      setHistory([...history, newImageData]);
+      setCurrentStep(currentStep + 1);
     }
   };
 
@@ -332,8 +197,8 @@ export function DrawingCanvas({ onDrawingComplete }: DrawingCanvasProps) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Konvertiere den Canvas zu einem PNG-Bild mit voller Qualität
     const pngData = canvas.toDataURL("image/png", 1.0).split(",")[1];
+    setDrawing(pngData);
     onDrawingComplete(pngData);
   };
 
@@ -341,109 +206,18 @@ export function DrawingCanvas({ onDrawingComplete }: DrawingCanvasProps) {
     <div className="flex flex-col items-center gap-4">
       <div className="flex gap-4 items-center mb-4">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
-            <span className="text-sm text-gray-900 dark:text-white">
-              Hintergrund:
-            </span>
-            <select
-              value={selectedBackground.value}
-              onChange={(e) => {
-                const bg = backgrounds.find((b) => b.value === e.target.value);
-                if (bg) handleBackgroundChange(bg);
-              }}
-              className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md px-2 py-1"
-            >
-              {backgrounds.map((bg) => (
-                <option key={bg.value} value={bg.value}>
-                  {bg.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button
-            onClick={() => setIsEraser(false)}
-            className={`p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
-              !isEraser
-                ? "bg-blue-500 text-white shadow-lg"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
-            }`}
-            title="Stift"
-          >
-            <Paintbrush className="w-6 h-6" />
-          </button>
-          <button
-            onClick={() => setIsEraser(true)}
-            className={`p-2 rounded-lg transition-all duration-200 transform hover:scale-110 active:scale-95 ${
-              isEraser
-                ? "bg-blue-500 text-white shadow-lg"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
-            }`}
-            title="Radierer"
-          >
-            <Eraser className="w-6 h-6" />
-          </button>
-          <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-            <div className="relative w-8 h-8 group">
-              <div
-                className={`w-8 h-8 rounded-md border-2 overflow-hidden transition-transform hover:scale-110 ${
-                  color !== customColor &&
-                  !QUICK_COLORS.some((qc) => qc === color)
-                    ? "border-blue-500 scale-110"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
-                style={{
-                  background:
-                    "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)",
-                }}
-              />
-              <input
-                type="color"
-                value={color}
-                onChange={(e) => handleColorChange(e.target.value)}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                title="Farbe wählen"
-              />
-            </div>
-            {QUICK_COLORS.map((quickColor) => (
-              <button
-                key={quickColor}
-                onClick={() => handleColorChange(quickColor)}
-                className={`w-8 h-8 rounded-md border-2 transition-all duration-200 transform hover:scale-110 active:scale-95 ${
-                  color === quickColor
-                    ? "border-blue-500 scale-110 shadow-lg"
-                    : "border-gray-300 dark:border-gray-600 hover:border-blue-300"
-                }`}
-                style={{
-                  backgroundColor: quickColor,
-                  boxShadow:
-                    quickColor === "#FFFFFF"
-                      ? "inset 0 0 0 1px rgba(0,0,0,0.1)"
-                      : color === quickColor
-                      ? "0 2px 4px rgba(0,0,0,0.1)"
-                      : "none",
-                }}
-                title={quickColor}
-              />
-            ))}
-            {customColor && (
-              <button
-                onClick={() => handleColorChange(customColor)}
-                className={`w-8 h-8 rounded-md border-2 transition-all duration-200 transform hover:scale-110 active:scale-95 ${
-                  color === customColor
-                    ? "border-blue-500 scale-110 shadow-lg"
-                    : "border-gray-300 dark:border-gray-600 hover:border-blue-300"
-                }`}
-                style={{
-                  backgroundColor: customColor,
-                  boxShadow:
-                    color === customColor
-                      ? "0 2px 4px rgba(0,0,0,0.1)"
-                      : "none",
-                }}
-                title="Benutzerdefinierte Farbe"
-              />
-            )}
-          </div>
+          <BackgroundSelector
+            backgrounds={backgrounds}
+            selectedBackground={selectedBackground}
+            onBackgroundChange={handleBackgroundChange}
+          />
+          <ColorPicker
+            color={color}
+            customColor={customColor}
+            onColorChange={handleColorChange}
+            isEraser={isEraser}
+            onEraserToggle={() => setIsEraser(!isEraser)}
+          />
           <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
             <span className="text-sm text-gray-900 dark:text-white">
               Größe:
@@ -463,51 +237,23 @@ export function DrawingCanvas({ onDrawingComplete }: DrawingCanvasProps) {
         </div>
       </div>
 
-      <div className="relative w-[512px] h-[512px] border-2 border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-white">
-        <canvas
-          ref={canvasRef}
-          onMouseDown={startDrawing}
-          onMouseMove={handleMouseMove}
-          onMouseUp={stopDrawing}
-          onMouseOut={handleMouseLeave}
-          className="absolute top-0 left-0"
-        />
-        <canvas
-          ref={cursorCanvasRef}
-          className="absolute top-0 left-0 pointer-events-none"
-        />
-      </div>
+      <Canvas
+        ref={canvasRef}
+        width={512}
+        height={512}
+        color={color}
+        brushSize={brushSize}
+        isEraser={isEraser}
+      />
 
-      <div className="flex gap-2 mt-4">
-        <button
-          onClick={undo}
-          disabled={currentStep <= 0}
-          className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-          title="Rückgängig"
-        >
-          <Undo2 className="w-6 h-6" />
-        </button>
-        <button
-          onClick={redo}
-          disabled={currentStep >= history.length - 1}
-          className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-          title="Wiederholen"
-        >
-          <Redo2 className="w-6 h-6" />
-        </button>
-        <button
-          onClick={clearCanvas}
-          className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white"
-        >
-          Löschen
-        </button>
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white"
-        >
-          Fertig
-        </button>
-      </div>
+      <Toolbar
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        onClear={handleClear}
+        onSave={handleSave}
+        canUndo={currentStep > 0}
+        canRedo={currentStep < history.length - 1}
+      />
     </div>
   );
 }
