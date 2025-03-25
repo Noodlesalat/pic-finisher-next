@@ -21,7 +21,7 @@ export function SlotMachine({
   const [finalWord, setFinalWord] = useState<string>("");
   const [isComplete, setIsComplete] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const spinSpeedRef = useRef(50);
+  const spinSpeedRef = useRef(30);
   const finalWordRef = useRef<string>("");
 
   // Cleanup-Funktion für Timeouts
@@ -40,10 +40,10 @@ export function SlotMachine({
     console.log("Selected random word:", randomWord);
     setCurrentWord(randomWord);
 
-    if (spinSpeedRef.current < 500) {
+    if (spinSpeedRef.current < 200) {
       console.log("Continuing spin, current speed:", spinSpeedRef.current);
       timeoutRef.current = setTimeout(() => {
-        spinSpeedRef.current += 20;
+        spinSpeedRef.current += 12;
         spin();
       }, spinSpeedRef.current);
     } else {
@@ -58,7 +58,7 @@ export function SlotMachine({
       timeoutRef.current = setTimeout(() => {
         console.log("Calling onComplete with word:", finalWordRef.current);
         onComplete(finalWordRef.current, category);
-      }, 1000);
+      }, 500);
     }
   }, [category, onComplete]);
 
@@ -95,13 +95,16 @@ export function SlotMachine({
     <div className="h-12 flex items-center justify-center overflow-hidden">
       <motion.div
         animate={{
-          opacity: isSpinning ? [0.5, 1] : 1,
-          y: isSpinning ? [-20, 0] : 0,
+          opacity: isSpinning ? [0.3, 1] : 1,
+          y: isSpinning ? [-8, 0] : 0,
+          scale: isSpinning ? [0.97, 1] : 1,
+          rotateX: isSpinning ? [3, 0] : 0,
         }}
         transition={{
           duration: spinSpeedRef.current / 1000,
           repeat: isSpinning ? Infinity : 0,
-          ease: "linear",
+          ease: "easeInOut",
+          times: [0, 1],
         }}
         className="text-2xl font-semibold whitespace-nowrap"
       >
