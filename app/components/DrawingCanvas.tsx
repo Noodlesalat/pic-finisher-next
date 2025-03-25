@@ -5,9 +5,12 @@ import { BackgroundSelector } from "./BackgroundSelector";
 import { Canvas } from "./Canvas";
 import { Toolbar } from "./Toolbar";
 import { useDrawingStore } from "../store/drawingStore";
+import { Style } from "../types/prompts";
 
 interface DrawingCanvasProps {
   onDrawingComplete: (base64Image: string) => void;
+  selectedStyle: Style;
+  onStyleChange: (style: Style) => void;
 }
 
 type BackgroundType = "white" | "black" | "custom";
@@ -25,7 +28,11 @@ const DEFAULT_BACKGROUNDS: Background[] = [
 
 const QUICK_COLORS = ["#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF"];
 
-export function DrawingCanvas({ onDrawingComplete }: DrawingCanvasProps) {
+export function DrawingCanvas({
+  onDrawingComplete,
+  selectedStyle,
+  onStyleChange,
+}: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [color, setColor] = useState("#FFFFFF");
   const [brushSize, setBrushSize] = useState(20);
@@ -246,14 +253,18 @@ export function DrawingCanvas({ onDrawingComplete }: DrawingCanvasProps) {
         isEraser={isEraser}
       />
 
-      <Toolbar
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onClear={handleClear}
-        onSave={handleSave}
-        canUndo={currentStep > 0}
-        canRedo={currentStep < history.length - 1}
-      />
+      <div className="flex items-center justify-between w-full mt-4">
+        <Toolbar
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onClear={handleClear}
+          onSave={handleSave}
+          canUndo={currentStep > 0}
+          canRedo={currentStep < history.length - 1}
+          selectedStyle={selectedStyle}
+          onStyleChange={onStyleChange}
+        />
+      </div>
     </div>
   );
 }

@@ -121,6 +121,7 @@ export async function POST(request: Request) {
     const { base64Image, word, category, style } =
       (await request.json()) as GenerateRequest;
     const clientId = uuidv4();
+    console.log("word:", word, "category:", category, "style:", style);
 
     // Kopiere den Workflow und aktualisiere die notwendigen Werte
     const workflow = JSON.parse(

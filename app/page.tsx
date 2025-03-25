@@ -18,6 +18,7 @@ interface NavigationState {
   isTransitionActive: boolean;
   selectedWord: string | null;
   selectedCategory: Category | null;
+  selectedStyle: Style;
   drawing: string;
   generatedImage: string;
   isGenerating: boolean;
@@ -31,6 +32,7 @@ export default function Home() {
     isTransitionActive: false,
     selectedWord: null,
     selectedCategory: null,
+    selectedStyle: "Realistisch",
     drawing: "",
     generatedImage: "",
     isGenerating: false,
@@ -78,7 +80,7 @@ export default function Home() {
           base64Image,
           word: navigation.selectedWord,
           category: navigation.selectedCategory,
-          style: "Realistisch" as Style,
+          style: navigation.selectedStyle,
         }),
       });
 
@@ -126,6 +128,7 @@ export default function Home() {
       isTransitionActive: false,
       selectedWord: null,
       selectedCategory: null,
+      selectedStyle: "Realistisch",
       drawing: "",
       generatedImage: "",
       isGenerating: false,
@@ -193,6 +196,13 @@ export default function Home() {
             {navigation.step === "drawing" && navigation.selectedWord && (
               <DrawingSection
                 selectedWord={navigation.selectedWord}
+                selectedStyle={navigation.selectedStyle}
+                onStyleChange={(style) =>
+                  setNavigation((prev) => ({
+                    ...prev,
+                    selectedStyle: style,
+                  }))
+                }
                 onDrawingComplete={handleDrawingComplete}
               />
             )}
