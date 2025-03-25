@@ -5,6 +5,11 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Category } from "../types/prompts";
 import { prompts } from "../data/prompts";
 
+interface Word {
+  display: string;
+  prompt: string;
+}
+
 interface SlotMachineProps {
   category: Category;
   onComplete: (word: string, category: Category) => void;
@@ -16,13 +21,13 @@ export function SlotMachine({
   onComplete,
   isActive,
 }: SlotMachineProps) {
-  const [currentWord, setCurrentWord] = useState<string>("");
+  const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [finalWord, setFinalWord] = useState<string>("");
+  const [finalWord, setFinalWord] = useState<Word | null>(null);
   const [isComplete, setIsComplete] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const spinSpeedRef = useRef(30);
-  const finalWordRef = useRef<string>("");
+  const finalWordRef = useRef<Word | null>(null);
 
   // Cleanup-Funktion für Timeouts
   const cleanup = useCallback(() => {
@@ -57,8 +62,13 @@ export function SlotMachine({
 
       // Warte kurz, bevor das Wort ausgewählt wird
       timeoutRef.current = setTimeout(() => {
-        console.log("Calling onComplete with word:", finalWordRef.current);
-        onComplete(finalWordRef.current, category);
+        console.log(
+          "Calling onComplete with word:",
+          finalWordRef.current?.prompt
+        );
+        if (finalWordRef.current) {
+          onComplete(finalWordRef.current.prompt, category);
+        }
       }, 500);
     }
   }, [category, onComplete]);
@@ -82,23 +92,22 @@ export function SlotMachine({
   }, [isActive, category, spin, cleanup]);
 
   // Wenn die Animation abgeschlossen ist, zeige nur das finale Wort
-  if (isComplete) {
-    console.log("Rendering final word:", finalWord);
+  if (isComplete && finalWord) {
+    console.log("Rendering final word:", finalWord.display);
     return (
       <div className="h-12 flex items-center justify-center">
-        <span className="text-2xl font-semibold">{finalWord}</span>
+        <span className="text-2xl font-semibold">{finalWord.display}</span>
       </div>
     );
   }
 
-  console.log("Rendering spinning word:", currentWord);
+  console.log("Rendering spinning word:", currentWord?.display);
   return (
     <div className="h-12 flex items-center justify-center overflow-hidden">
       <motion.div
         animate={{
           opacity: isSpinning ? [0.3, 1] : 1,
           y: isSpinning ? [-8, 0] : 0,
-          scale: isSpinning ? [0.97, 1] : 1,
         }}
         transition={{
           duration: 0.2,
@@ -107,7 +116,7 @@ export function SlotMachine({
         }}
         className="text-2xl font-semibold"
       >
-        {currentWord}
+        {currentWord?.display || ""}
       </motion.div>
     </div>
   );

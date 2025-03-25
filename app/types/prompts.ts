@@ -3,7 +3,10 @@ export type Style =
   | "Fantasy"
   | "Zeichnung"
   | "Comic"
-  | "Realistisch";
+  | "Realistisch"
+  | "Öl-Gemälde"
+  | "Aquarell"
+  | "Pixel Art";
 export type Category =
   | "Tiere"
   | "Fantastische Wesen"

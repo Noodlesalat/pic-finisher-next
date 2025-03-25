@@ -137,7 +137,7 @@
     "inputs": {
       "scheduler": "simple",
       "steps": 8,
-      "denoise": 0.85,
+      "denoise": 0.81,
       "model": ["49", 0]
     },
     "class_type": "BasicScheduler",
