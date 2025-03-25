@@ -23,9 +23,19 @@ Die Anwendung dient dazu, Kreativität, digitale Kompetenzen und das Verständni
 - Side-by-Side Darstellung zur direkten Gegenüberstellung beider Bilder (Original & KI-generiert)
 - Möglichkeit, einen QR-Code zu generieren, über den beide Bilder betrachtet und heruntergeladen werden können
 
-## 🖌️ KI-Zeichenstile
+## 🎨 Kategorien und Stile
 
-Die Anwendung bietet verschiedene **KI-Zeichenstile**:
+Die Anwendung bietet verschiedene **Kategorien** und **KI-Zeichenstile**:
+
+### Kategorien
+
+- Tiere
+- Früchte
+- Fahrzeuge
+- Gebäude
+- Pflanzen
+
+### KI-Zeichenstile
 
 - Sci-Fi
 - Fantasy
@@ -33,7 +43,7 @@ Die Anwendung bietet verschiedene **KI-Zeichenstile**:
 - Comic
 - Realistisch
 
-Je nach gewähltem Stil werden automatisch:
+Je nach gewählter Kategorie und Stil werden automatisch:
 
 - Der Text-Prompt angepasst
 - Der ComfyUI-Workflow dynamisch aktualisiert
@@ -51,7 +61,7 @@ Je nach gewähltem Stil werden automatisch:
 - React & Next.js als Haupttechnologien
 - Tailwind CSS zur schnellen und effizienten Gestaltung des UI
 - Nutzung eines bestehenden ComfyUI-Workflows (bereitgestellt als JSON-Datei)
-- Kommunikation zwischen Frontend und ComfyUI via REST-API
+- Kommunikation zwischen Frontend und ComfyUI via REST-API und WebSocket
 - Dockerisiertes Deployment zur einfachen Wartung und Skalierbarkeit
 
 ## 🛡️ Datenschutz und Sicherheit
@@ -66,6 +76,8 @@ Je nach gewähltem Stil werden automatisch:
 app/
   ├── components/          # React-Komponenten
   ├── data/               # Daten und Konfigurationen
+  │   ├── prompts/        # Prompt-Templates für verschiedene Kategorien
+  │   └── workflows/      # ComfyUI Workflow-Konfigurationen
   ├── types/              # TypeScript Typdefinitionen
   ├── api/                # API-Routen
   └── page.tsx            # Hauptseite
