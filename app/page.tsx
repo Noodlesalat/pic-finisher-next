@@ -1,13 +1,12 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
-import { DrawingCanvas } from "./components/DrawingCanvas";
-import { WordTransition } from "./components/WordTransition";
-import { SlotMachine } from "./components/SlotMachine";
-import { Category, Style } from "./types/prompts";
-import { ArrowLeft, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { prompts } from "./data/prompts";
+import { Category, Style } from "./types/prompts";
+import { WordTransition } from "./components/WordTransition";
+import { CategorySelection } from "./components/pages/CategorySelection";
+import { DrawingSection } from "./components/pages/DrawingSection";
+import { ResultSection } from "./components/pages/ResultSection";
+import { Navigation } from "./components/pages/Navigation";
 
 type Step = "category" | "drawing" | "result";
 
@@ -120,6 +119,7 @@ export default function Home() {
     setNavigation((prev) => ({
       ...prev,
       step: prev.step === "result" ? "drawing" : "category",
+      isSlotMachineActive: false,
     }));
   };
 
@@ -132,27 +132,11 @@ export default function Home() {
       />
 
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">Pic Finisher</h1>
-          <div className="flex gap-4">
-            {navigation.step !== "category" && (
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                Zurück
-              </button>
-            )}
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <RotateCcw className="w-5 h-5" />
-              Neu starten
-            </button>
-          </div>
-        </div>
+        <Navigation
+          currentStep={navigation.step}
+          onBack={handleBack}
+          onReset={handleReset}
+        />
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -164,97 +148,32 @@ export default function Home() {
             className="space-y-8"
           >
             {navigation.step === "category" && (
-              <section className="min-h-[calc(100vh-12rem)] flex flex-col items-center justify-center">
-                <h2 className="text-4xl font-semibold mb-12 text-center">
-                  Wähle eine Kategorie
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {Object.entries(prompts).map(([category]) => (
-                    <div
-                      key={category}
-                      onClick={() => {
-                        setNavigation((prev) => ({
-                          ...prev,
-                          isSlotMachineActive: true,
-                          selectedCategory: category as Category,
-                        }));
-                      }}
-                      className="bg-gray-800 rounded-lg p-6 cursor-pointer hover:bg-gray-700 transition-colors h-32 w-64 flex flex-col justify-center items-center"
-                    >
-                      {navigation.selectedCategory === category ? (
-                        <div className="w-full text-center">
-                          <SlotMachine
-                            category={category as Category}
-                            onComplete={handleSlotMachineComplete}
-                            isActive={navigation.isSlotMachineActive}
-                          />
-                        </div>
-                      ) : (
-                        <h3 className="text-2xl font-semibold text-center">
-                          {category}
-                        </h3>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
+              <CategorySelection
+                selectedCategory={navigation.selectedCategory}
+                isSlotMachineActive={navigation.isSlotMachineActive}
+                onCategorySelect={(category) =>
+                  setNavigation((prev) => ({
+                    ...prev,
+                    isSlotMachineActive: true,
+                    selectedCategory: category,
+                  }))
+                }
+                onSlotMachineComplete={handleSlotMachineComplete}
+              />
             )}
 
             {navigation.step === "drawing" && navigation.selectedWord && (
-              <section className="min-h-[calc(100vh-12rem)] flex flex-col items-center">
-                <h2 className="text-4xl font-semibold mb-12 text-center">
-                  Zeichne: {navigation.selectedWord}
-                </h2>
-                <div className="w-full max-w-2xl">
-                  <DrawingCanvas onDrawingComplete={handleDrawingComplete} />
-                </div>
-              </section>
+              <DrawingSection
+                selectedWord={navigation.selectedWord}
+                onDrawingComplete={handleDrawingComplete}
+              />
             )}
 
             {navigation.step === "result" && (
-              <section>
-                <h2 className="text-4xl font-semibold mb-12 text-center">
-                  Ergebnis
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <h3 className="text-2xl font-medium mb-4 text-center">
-                      Deine Zeichnung
-                    </h3>
-                    <div className="flex justify-center">
-                      <Image
-                        src={navigation.drawing}
-                        alt="Gezeichnetes Bild"
-                        width={512}
-                        height={512}
-                        className="max-w-full h-auto rounded-lg shadow-lg"
-                      />
-                    </div>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <h3 className="text-2xl font-medium mb-4 text-center">
-                      KI-generiertes Bild
-                    </h3>
-                    <div className="flex justify-center">
-                      <Image
-                        src={navigation.generatedImage}
-                        alt="KI-generiertes Bild"
-                        width={512}
-                        height={512}
-                        className="max-w-full h-auto rounded-lg shadow-lg"
-                      />
-                    </div>
-                  </motion.div>
-                </div>
-              </section>
+              <ResultSection
+                drawing={navigation.drawing}
+                generatedImage={navigation.generatedImage}
+              />
             )}
           </motion.div>
         </AnimatePresence>

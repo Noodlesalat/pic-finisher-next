@@ -34,7 +34,8 @@ export function SlotMachine({
 
   // Slot-Machine-Logik
   const spin = useCallback(() => {
-    const words = prompts[category];
+    const categoryData = prompts[category];
+    const words = categoryData.words;
     console.log("Spinning with category:", category, "words:", words);
     const randomWord = words[Math.floor(Math.random() * words.length)];
     console.log("Selected random word:", randomWord);
@@ -98,15 +99,13 @@ export function SlotMachine({
           opacity: isSpinning ? [0.3, 1] : 1,
           y: isSpinning ? [-8, 0] : 0,
           scale: isSpinning ? [0.97, 1] : 1,
-          rotateX: isSpinning ? [3, 0] : 0,
         }}
         transition={{
-          duration: spinSpeedRef.current / 1000,
+          duration: 0.2,
           repeat: isSpinning ? Infinity : 0,
-          ease: "easeInOut",
-          times: [0, 1],
+          repeatType: "reverse",
         }}
-        className="text-2xl font-semibold whitespace-nowrap"
+        className="text-2xl font-semibold"
       >
         {currentWord}
       </motion.div>

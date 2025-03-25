@@ -1,6 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pic Finisher Next
 
-# Konzept und Vorgehen der React / Next.js Anwendung
+Eine interaktive Webanwendung für Kinder und Jugendliche, die Kreativität und KI-Verständnis spielerisch fördert.
 
 ## 📌 Projektziel
 
@@ -23,9 +23,9 @@ Die Anwendung dient dazu, Kreativität, digitale Kompetenzen und das Verständni
 - Side-by-Side Darstellung zur direkten Gegenüberstellung beider Bilder (Original & KI-generiert)
 - Möglichkeit, einen QR-Code zu generieren, über den beide Bilder betrachtet und heruntergeladen werden können
 
-## 🖌️ Auswahl verschiedener KI-Zeichenstile
+## 🖌️ KI-Zeichenstile
 
-Die Anwendung bietet zusätzlich die Möglichkeit, verschiedene **KI-Zeichenstile** auszuwählen, in denen das gemalte Bild durch ComfyUI generiert wird. Beispiele hierfür sind:
+Die Anwendung bietet verschiedene **KI-Zeichenstile**:
 
 - Sci-Fi
 - Fantasy
@@ -35,17 +35,15 @@ Die Anwendung bietet zusätzlich die Möglichkeit, verschiedene **KI-Zeichenstil
 
 Je nach gewähltem Stil werden automatisch:
 
-- Der Text-Prompt angepasst, um den Zeichenstil deutlich hervorzuheben.
-- Der ComfyUI-Workflow dynamisch aktualisiert, inklusive der Nutzung spezieller Lora-Modelle oder zusätzlicher Prompt-Erweiterungen (definiert in der bereitgestellten JSON-Datei).
-- Denoise-Stärke und andere Parameter angepasst, um den gewünschten Effekt optimal umzusetzen.
-
-Dadurch entstehen individuell gestaltete Bilder, die die Kreativität und Fantasie der jungen Nutzer zusätzlich fördern.
+- Der Text-Prompt angepasst
+- Der ComfyUI-Workflow dynamisch aktualisiert
+- Denoise-Stärke und andere Parameter optimiert
 
 ## 🎨 Gestaltung und UX
 
 - Professionelles, modernes und dennoch kinderfreundliches Design
 - Integration des Logos der Hochschule Fulda
-- Nutzung von ansprechenden UI-Animationen, Loaders und Skeletons zur verbesserten User Experience
+- Nutzung von ansprechenden UI-Animationen, Loaders und Skeletons
 - Intuitive und klare Benutzeroberfläche für junge Nutzergruppen
 
 ## 🔧 Technische Umsetzung
@@ -54,11 +52,44 @@ Dadurch entstehen individuell gestaltete Bilder, die die Kreativität und Fantas
 - Tailwind CSS zur schnellen und effizienten Gestaltung des UI
 - Nutzung eines bestehenden ComfyUI-Workflows (bereitgestellt als JSON-Datei)
 - Kommunikation zwischen Frontend und ComfyUI via REST-API
-- Dockerisiertes Deployment zur einfachen Wartung und Skalierbarkeit der Anwendung
+- Dockerisiertes Deployment zur einfachen Wartung und Skalierbarkeit
 
 ## 🛡️ Datenschutz und Sicherheit
 
 - Temporäre Speicherung der generierten Bilder
-- Einhaltung von DSGVO-Richtlinien, keine dauerhafte Speicherung personenbezogener Daten oder Bilder
+- Einhaltung von DSGVO-Richtlinien
+- Keine dauerhafte Speicherung personenbezogener Daten oder Bilder
 
-Das Projekt ist modular aufgebaut und so gestaltet, dass es leicht wartbar, skalierbar und erweiterbar ist.
+## 📁 Projektstruktur
+
+```
+app/
+  ├── components/          # React-Komponenten
+  ├── data/               # Daten und Konfigurationen
+  ├── types/              # TypeScript Typdefinitionen
+  ├── api/                # API-Routen
+  └── page.tsx            # Hauptseite
+```
+
+## 🚀 Getting Started
+
+1. Repository klonen
+2. Abhängigkeiten installieren:
+   ```bash
+   npm install
+   ```
+3. Entwicklungsserver starten:
+   ```bash
+   npm run dev
+   ```
+4. Öffne [http://localhost:3000](http://localhost:3000) im Browser
+
+## 🔧 Technische Voraussetzungen
+
+- Node.js 18.x oder höher
+- ComfyUI-Instanz (lokal oder remote)
+- Docker (optional, für Container-Deployment)
+
+## 📝 Lizenz
+
+Alle Rechte vorbehalten. Dieses Projekt ist Teil eines Forschungsprojekts der Hochschule Fulda.
