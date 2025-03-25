@@ -1,8 +1,13 @@
 import { DrawingCanvas } from "@/app/components/DrawingCanvas";
 import { Style, Background } from "@/app/types/prompts";
 
+interface Word {
+  display: string;
+  prompt: string;
+}
+
 interface DrawingSectionProps {
-  selectedWord: string;
+  selectedWord: Word;
   selectedStyle: Style;
   selectedBackground: Background;
   onStyleChange: (style: Style) => void;
@@ -22,7 +27,7 @@ export function DrawingSection({
     <section className="min-h-[calc(100vh-12rem)]">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
         <h2 className="text-4xl font-semibold mb-8 text-center">
-          Zeichne: {selectedWord}
+          Zeichne: {selectedWord.display}
         </h2>
 
         <div className="w-full max-w-2xl mx-auto">

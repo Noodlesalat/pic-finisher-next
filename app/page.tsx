@@ -12,11 +12,16 @@ import { useGeneratedImageStore } from "./store/generatedImageStore";
 
 type Step = "category" | "drawing" | "result";
 
+interface Word {
+  display: string;
+  prompt: string;
+}
+
 interface NavigationState {
   step: Step;
   isSlotMachineActive: boolean;
   isTransitionActive: boolean;
-  selectedWord: string | null;
+  selectedWord: Word | null;
   selectedCategory: Category | null;
   selectedStyle: Style;
   selectedBackground: Background;
@@ -47,7 +52,7 @@ export default function Home() {
     error: "",
   });
 
-  const handleSlotMachineComplete = (word: string, category: Category) => {
+  const handleSlotMachineComplete = (word: Word, category: Category) => {
     console.log("SlotMachine complete:", word, category);
     setNavigation((prev) => ({
       ...prev,
@@ -68,7 +73,7 @@ export default function Home() {
   };
 
   const handleDrawingComplete = async (base64Image: string) => {
-    if (!navigation.selectedCategory) return;
+    if (!navigation.selectedCategory || !navigation.selectedWord) return;
 
     setNavigation((prev) => ({
       ...prev,
@@ -86,7 +91,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           base64Image,
-          word: navigation.selectedWord,
+          word: navigation.selectedWord.prompt,
           category: navigation.selectedCategory,
           style: navigation.selectedStyle,
         }),
@@ -167,7 +172,7 @@ export default function Home() {
     <main className="min-h-screen p-8">
       <WordTransition
         isVisible={navigation.isTransitionActive}
-        word={navigation.selectedWord || ""}
+        word={navigation.selectedWord || { display: "", prompt: "" }}
         onTransitionComplete={handleTransitionComplete}
       />
 

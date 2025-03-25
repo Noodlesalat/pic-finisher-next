@@ -2,9 +2,14 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect } from "react";
 
+interface Word {
+  display: string;
+  prompt: string;
+}
+
 interface WordTransitionProps {
   isVisible: boolean;
-  word: string;
+  word: Word;
   onTransitionComplete: () => void;
 }
 
@@ -52,7 +57,7 @@ export function WordTransition({
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="text-8xl font-bold text-white"
             >
-              {word}
+              {word.display}
             </motion.div>
           </div>
         </motion.div>

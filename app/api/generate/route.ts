@@ -142,6 +142,8 @@ export async function POST(request: Request) {
     // Aktualisiere den Noise-Seed für Variation
     workflow["23"].inputs.noise_seed = Math.floor(Math.random() * 1000000);
 
+    console.log("Kompletter Prompt:", prompt);
+
     console.log("Queuing prompt...");
     const { prompt_id } = await queuePrompt(workflow, clientId);
     console.log("Prompt queued with ID:", prompt_id);

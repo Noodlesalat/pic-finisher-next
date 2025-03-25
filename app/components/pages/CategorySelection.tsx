@@ -2,11 +2,16 @@ import { Category } from "@/app/types/prompts";
 import { prompts } from "@/app/data/prompts";
 import { SlotMachine } from "@/app/components/SlotMachine";
 
+interface Word {
+  display: string;
+  prompt: string;
+}
+
 interface CategorySelectionProps {
   selectedCategory: Category | null;
   isSlotMachineActive: boolean;
   onCategorySelect: (category: Category) => void;
-  onSlotMachineComplete: (word: string, category: Category) => void;
+  onSlotMachineComplete: (word: Word, category: Category) => void;
 }
 
 export function CategorySelection({
