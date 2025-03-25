@@ -1,5 +1,5 @@
 import { Undo2, Redo2, Zap, Trash2 } from "lucide-react";
-import { Style } from "../types/prompts";
+import { Style, AVAILABLE_STYLES } from "../types/prompts";
 
 interface ToolbarProps {
   onUndo: () => void;
@@ -22,14 +22,6 @@ export function Toolbar({
   selectedStyle,
   onStyleChange,
 }: ToolbarProps) {
-  const styles: Style[] = [
-    "Sci-Fi",
-    "Fantasy",
-    "Zeichnung",
-    "Comic",
-    "Realistisch",
-  ];
-
   return (
     <div className="flex items-center justify-between w-full bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
       <div className="flex gap-2">
@@ -71,7 +63,7 @@ export function Toolbar({
           onChange={(e) => onStyleChange(e.target.value as Style)}
           className="w-48 h-10 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white sm:text-sm"
         >
-          {styles.map((style) => (
+          {AVAILABLE_STYLES.map((style) => (
             <option key={style} value={style}>
               {style}
             </option>

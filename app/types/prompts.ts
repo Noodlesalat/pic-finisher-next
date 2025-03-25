@@ -7,6 +7,18 @@ export type Style =
   | "Öl-Gemälde"
   | "Aquarell"
   | "Pixel Art";
+
+export const AVAILABLE_STYLES: Style[] = [
+  "Sci-Fi",
+  "Fantasy",
+  "Zeichnung",
+  "Comic",
+  "Realistisch",
+  "Öl-Gemälde",
+  "Aquarell",
+  "Pixel Art",
+];
+
 export type Category =
   | "Tiere"
   | "Fantastische Wesen"

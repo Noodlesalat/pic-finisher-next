@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Category, Style, Background } from "./types/prompts";
+import { Category, Style, Background, AVAILABLE_STYLES } from "./types/prompts";
 import { WordTransition } from "./components/WordTransition";
 import { CategorySelection } from "./components/pages/CategorySelection";
 import { DrawingSection } from "./components/pages/DrawingSection";
@@ -72,7 +72,10 @@ export default function Home() {
     }));
   };
 
-  const handleDrawingComplete = async (base64Image: string) => {
+  const handleDrawingComplete = async (
+    base64Image: string,
+    styleOverride?: Style
+  ) => {
     if (!navigation.selectedCategory || !navigation.selectedWord) return;
 
     setNavigation((prev) => ({
@@ -93,7 +96,7 @@ export default function Home() {
           base64Image,
           word: navigation.selectedWord.prompt,
           category: navigation.selectedCategory,
-          style: navigation.selectedStyle,
+          style: styleOverride || navigation.selectedStyle,
         }),
       });
 
@@ -232,6 +235,18 @@ export default function Home() {
               <ResultSection
                 drawing={navigation.drawing}
                 generatedImage={navigation.generatedImage}
+                currentStyle={navigation.selectedStyle}
+                availableStyles={AVAILABLE_STYLES}
+                isGenerating={navigation.isGenerating}
+                selectedWord={navigation.selectedWord!}
+                onStyleChange={(style: Style) => {
+                  setNavigation((prev) => ({
+                    ...prev,
+                    selectedStyle: style,
+                    isGenerating: true,
+                  }));
+                  handleDrawingComplete(navigation.drawing, style);
+                }}
               />
             )}
           </motion.div>
