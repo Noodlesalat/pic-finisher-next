@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Category, Style } from "./types/prompts";
+import { Category, Style, Background } from "./types/prompts";
 import { WordTransition } from "./components/WordTransition";
 import { CategorySelection } from "./components/pages/CategorySelection";
 import { DrawingSection } from "./components/pages/DrawingSection";
@@ -19,11 +19,18 @@ interface NavigationState {
   selectedWord: string | null;
   selectedCategory: Category | null;
   selectedStyle: Style;
+  selectedBackground: Background;
   drawing: string;
   generatedImage: string;
   isGenerating: boolean;
   error: string;
 }
+
+const DEFAULT_BACKGROUND: Background = {
+  type: "white",
+  name: "Weiß",
+  value: "#FFFFFF",
+};
 
 export default function Home() {
   const [navigation, setNavigation] = useState<NavigationState>({
@@ -33,6 +40,7 @@ export default function Home() {
     selectedWord: null,
     selectedCategory: null,
     selectedStyle: "Realistisch",
+    selectedBackground: DEFAULT_BACKGROUND,
     drawing: "",
     generatedImage: "",
     isGenerating: false,
@@ -129,6 +137,7 @@ export default function Home() {
       selectedWord: null,
       selectedCategory: null,
       selectedStyle: "Realistisch",
+      selectedBackground: DEFAULT_BACKGROUND,
       drawing: "",
       generatedImage: "",
       isGenerating: false,
@@ -197,10 +206,17 @@ export default function Home() {
               <DrawingSection
                 selectedWord={navigation.selectedWord}
                 selectedStyle={navigation.selectedStyle}
+                selectedBackground={navigation.selectedBackground}
                 onStyleChange={(style) =>
                   setNavigation((prev) => ({
                     ...prev,
                     selectedStyle: style,
+                  }))
+                }
+                onBackgroundChange={(background) =>
+                  setNavigation((prev) => ({
+                    ...prev,
+                    selectedBackground: background,
                   }))
                 }
                 onDrawingComplete={handleDrawingComplete}

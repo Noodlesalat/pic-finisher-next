@@ -11,5 +11,13 @@ export type Category =
   | "Fahrzeuge"
   | "Essen";
 
+export type BackgroundType = "white" | "black" | "custom";
+
+export interface Background {
+  type: BackgroundType;
+  name: string;
+  value: string;
+}
+
 export type StylePrompts = Record<Style, string>;
 export type CategoryPrompts = Record<Category, StylePrompts>;

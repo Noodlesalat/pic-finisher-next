@@ -5,20 +5,14 @@ import { BackgroundSelector } from "./BackgroundSelector";
 import { Canvas } from "./Canvas";
 import { Toolbar } from "./Toolbar";
 import { useDrawingStore } from "../store/drawingStore";
-import { Style } from "../types/prompts";
+import { Style, Background, BackgroundType } from "../types/prompts";
 
 interface DrawingCanvasProps {
   onDrawingComplete: (base64Image: string) => void;
   selectedStyle: Style;
+  selectedBackground: Background;
   onStyleChange: (style: Style) => void;
-}
-
-type BackgroundType = "white" | "black" | "custom";
-
-interface Background {
-  type: BackgroundType;
-  name: string;
-  value: string;
+  onBackgroundChange: (background: Background) => void;
 }
 
 const DEFAULT_BACKGROUNDS: Background[] = [
@@ -31,7 +25,9 @@ const QUICK_COLORS = ["#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF"];
 export function DrawingCanvas({
   onDrawingComplete,
   selectedStyle,
+  selectedBackground,
   onStyleChange,
+  onBackgroundChange,
 }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [color, setColor] = useState("#FFFFFF");
@@ -42,9 +38,6 @@ export function DrawingCanvas({
   const [customColor, setCustomColor] = useState<string | null>(null);
   const [backgrounds, setBackgrounds] =
     useState<Background[]>(DEFAULT_BACKGROUNDS);
-  const [selectedBackground, setSelectedBackground] = useState<Background>(
-    DEFAULT_BACKGROUNDS[0]
-  );
 
   const { drawing: savedDrawing, setDrawing } = useDrawingStore();
 
@@ -79,7 +72,7 @@ export function DrawingCanvas({
   }, []);
 
   const handleBackgroundChange = async (background: Background) => {
-    setSelectedBackground(background);
+    onBackgroundChange(background);
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -117,11 +110,57 @@ export function DrawingCanvas({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Zuerst Hintergrund zeichnen
     if (selectedBackground.type === "custom") {
       const img = new window.Image();
       img.src = selectedBackground.value;
       img.onload = () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // Dann die gespeicherte Zeichnung laden, falls vorhanden
+        if (savedDrawing) {
+          const drawingImg = new Image();
+          drawingImg.onload = () => {
+            ctx.drawImage(drawingImg, 0, 0);
+            const newImageData = ctx.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+            setHistory([newImageData]);
+            setCurrentStep(0);
+          };
+          drawingImg.src = `data:image/png;base64,${savedDrawing}`;
+        } else {
+          const newImageData = ctx.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+          setHistory([newImageData]);
+          setCurrentStep(0);
+        }
+      };
+    } else {
+      ctx.fillStyle = selectedBackground.value;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Dann die gespeicherte Zeichnung laden, falls vorhanden
+      if (savedDrawing) {
+        const drawingImg = new Image();
+        drawingImg.onload = () => {
+          ctx.drawImage(drawingImg, 0, 0);
+          const newImageData = ctx.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+          setHistory([newImageData]);
+          setCurrentStep(0);
+        };
+        drawingImg.src = `data:image/png;base64,${savedDrawing}`;
+      } else {
         const newImageData = ctx.getImageData(
           0,
           0,
@@ -130,33 +169,9 @@ export function DrawingCanvas({
         );
         setHistory([newImageData]);
         setCurrentStep(0);
-      };
-    } else {
-      ctx.fillStyle = selectedBackground.value;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      const newImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      setHistory([newImageData]);
-      setCurrentStep(0);
+      }
     }
-  }, [selectedBackground.type, selectedBackground.value]);
-
-  // Lade die gespeicherte Zeichnung, wenn vorhanden
-  useEffect(() => {
-    if (savedDrawing && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        setHistory([imageData]);
-        setCurrentStep(0);
-      };
-      img.src = `data:image/png;base64,${savedDrawing}`;
-    }
-  }, [savedDrawing]);
+  }, [selectedBackground.type, selectedBackground.value, savedDrawing]);
 
   const handleUndo = () => {
     if (currentStep > 0) {

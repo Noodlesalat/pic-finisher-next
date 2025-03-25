@@ -1,4 +1,4 @@
-import { Undo2, Redo2 } from "lucide-react";
+import { Undo2, Redo2, Zap, Trash2 } from "lucide-react";
 import { Style } from "../types/prompts";
 
 interface ToolbarProps {
@@ -51,9 +51,10 @@ export function Toolbar({
         </button>
         <button
           onClick={onClear}
-          className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white"
+          className="group flex items-center justify-center gap-2 px-7 py-3 min-w-[145px] bg-gradient-to-r from-red-800 via-red-500 to-red-100 text-white rounded-lg shadow-lg hover:shadow-2xl transition-all duration-400 hover:-translate-y-1 hover:scale-102 bg-[length:200%_200%] hover:bg-right"
         >
-          Löschen
+          <Trash2 className="w-5 h-5" />
+          <span className="font-medium text-[17px]">Löschen</span>
         </button>
       </div>
 
@@ -78,9 +79,10 @@ export function Toolbar({
         </select>
         <button
           onClick={onSave}
-          className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white"
+          className="group flex items-center justify-center gap-2 px-7 py-3 min-w-[145px] bg-gradient-to-r from-green-800 via-green-500 to-green-100 text-white rounded-lg shadow-lg hover:shadow-2xl transition-all duration-400 hover:-translate-y-1 hover:scale-102 bg-[length:200%_200%] hover:bg-right"
         >
-          Fertig
+          <Zap className="w-5 h-5" />
+          <span className="font-medium text-[17px]">Fertig</span>
         </button>
       </div>
     </div>

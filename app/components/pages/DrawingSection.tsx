@@ -1,17 +1,21 @@
 import { DrawingCanvas } from "@/app/components/DrawingCanvas";
-import { Style } from "@/app/types/prompts";
+import { Style, Background } from "@/app/types/prompts";
 
 interface DrawingSectionProps {
   selectedWord: string;
   selectedStyle: Style;
+  selectedBackground: Background;
   onStyleChange: (style: Style) => void;
+  onBackgroundChange: (background: Background) => void;
   onDrawingComplete: (base64Image: string) => void;
 }
 
 export function DrawingSection({
   selectedWord,
   selectedStyle,
+  selectedBackground,
   onStyleChange,
+  onBackgroundChange,
   onDrawingComplete,
 }: DrawingSectionProps) {
   return (
@@ -25,7 +29,9 @@ export function DrawingSection({
           <DrawingCanvas
             onDrawingComplete={onDrawingComplete}
             selectedStyle={selectedStyle}
+            selectedBackground={selectedBackground}
             onStyleChange={onStyleChange}
+            onBackgroundChange={onBackgroundChange}
           />
         </div>
       </div>
