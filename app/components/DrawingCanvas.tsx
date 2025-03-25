@@ -13,6 +13,7 @@ interface DrawingCanvasProps {
   selectedBackground: Background;
   onStyleChange: (style: Style) => void;
   onBackgroundChange: (background: Background) => void;
+  isGenerating: boolean;
 }
 
 const DEFAULT_BACKGROUNDS: Background[] = [
@@ -28,6 +29,7 @@ export function DrawingCanvas({
   selectedBackground,
   onStyleChange,
   onBackgroundChange,
+  isGenerating,
 }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [color, setColor] = useState("#FFFFFF");
@@ -259,14 +261,26 @@ export function DrawingCanvas({
         </div>
       </div>
 
-      <Canvas
-        ref={canvasRef}
-        width={512}
-        height={512}
-        color={color}
-        brushSize={brushSize}
-        isEraser={isEraser}
-      />
+      <div className="relative">
+        <Canvas
+          ref={canvasRef}
+          width={512}
+          height={512}
+          color={color}
+          brushSize={brushSize}
+          isEraser={isEraser}
+        />
+        {isGenerating && (
+          <div className="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-white/10 dark:bg-black/10 rounded-lg">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto"></div>
+              <p className="mt-4 text-white text-lg">
+                KI generiert dein Bild...
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="flex items-center justify-between w-full mt-4">
         <Toolbar

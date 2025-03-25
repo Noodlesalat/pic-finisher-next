@@ -92,10 +92,13 @@ export function ResultSection({
                 }}
               />
               {isGenerating && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg">
-                  <p className="text-white text-lg">
-                    KI generiert dein Bild...
-                  </p>
+                <div className="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-white/10 dark:bg-black/10 rounded-lg">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto"></div>
+                    <p className="mt-4 text-white text-lg">
+                      KI generiert dein Bild...
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

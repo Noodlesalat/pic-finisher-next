@@ -13,6 +13,7 @@ interface DrawingSectionProps {
   onStyleChange: (style: Style) => void;
   onBackgroundChange: (background: Background) => void;
   onDrawingComplete: (base64Image: string) => void;
+  isGenerating: boolean;
 }
 
 export function DrawingSection({
@@ -22,6 +23,7 @@ export function DrawingSection({
   onStyleChange,
   onBackgroundChange,
   onDrawingComplete,
+  isGenerating,
 }: DrawingSectionProps) {
   return (
     <section className="min-h-[calc(100vh-12rem)]">
@@ -37,6 +39,7 @@ export function DrawingSection({
             selectedBackground={selectedBackground}
             onStyleChange={onStyleChange}
             onBackgroundChange={onBackgroundChange}
+            isGenerating={isGenerating}
           />
         </div>
       </div>

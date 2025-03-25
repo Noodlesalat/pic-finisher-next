@@ -228,6 +228,7 @@ export default function Home() {
                   }))
                 }
                 onDrawingComplete={handleDrawingComplete}
+                isGenerating={navigation.isGenerating}
               />
             )}
 
@@ -251,13 +252,6 @@ export default function Home() {
             )}
           </motion.div>
         </AnimatePresence>
-
-        {navigation.isGenerating && (
-          <section className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">KI generiert dein Bild...</p>
-          </section>
-        )}
 
         {navigation.error && (
           <section className="text-center text-red-500">

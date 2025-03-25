@@ -77,7 +77,6 @@ async function getImages(
     ws.on("message", (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString());
-        console.log("WebSocket message:", message);
 
         if (
           message.type === "executing" &&
@@ -88,8 +87,6 @@ async function getImages(
             ws.close();
             resolve(currentOutput);
           }
-        } else if (message.type === "progress") {
-          console.log("Progress:", message.data);
         }
       } catch {
         // Wenn die Nachricht kein JSON ist, handelt es sich um Bilddaten
@@ -121,7 +118,6 @@ export async function POST(request: Request) {
     const { base64Image, word, category, style } =
       (await request.json()) as GenerateRequest;
     const clientId = uuidv4();
-    console.log("word:", word, "category:", category, "style:", style);
 
     // Kopiere den Workflow und aktualisiere die notwendigen Werte
     const workflow = JSON.parse(
@@ -142,11 +138,7 @@ export async function POST(request: Request) {
     // Aktualisiere den Noise-Seed für Variation
     workflow["23"].inputs.noise_seed = Math.floor(Math.random() * 1000000);
 
-    console.log("Kompletter Prompt:", prompt);
-
-    console.log("Queuing prompt...");
     const { prompt_id } = await queuePrompt(workflow, clientId);
-    console.log("Prompt queued with ID:", prompt_id);
 
     // Verbinde mit dem WebSocket
     const ws = new WebSocket(
@@ -155,20 +147,14 @@ export async function POST(request: Request) {
 
     // Warte auf die Verbindung
     await new Promise<void>((resolve) => {
-      ws.on("open", () => {
-        console.log("WebSocket connected");
-        resolve();
-      });
+      ws.on("open", () => resolve());
     });
 
-    console.log("Waiting for image data...");
     const imageData = await getImages(ws, prompt_id);
 
     if (!imageData) {
       throw new Error("Keine Bilddaten erhalten");
     }
-
-    console.log("Image data received, length:", imageData.length);
 
     // Konvertiere die Bilddaten zu Base64
     const base64ImageData = imageData.toString("base64");
@@ -178,7 +164,6 @@ export async function POST(request: Request) {
       throw new Error("Ungültige Base64-Bilddaten");
     }
 
-    console.log("Base64 image data length:", base64ImageData.length);
     return NextResponse.json({ imageUrl: base64ImageData });
   } catch (error) {
     console.error("Error generating image:", error);
