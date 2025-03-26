@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import fluxWorkflow from "../../../data/workflows/flux-workflow.json";
+import fluxWorkflow from "../../data/flux-workflow.json";
 import { prompts } from "../../data/prompts";
 import { Category, Style } from "../../types/prompts";
 import WebSocket from "ws";
