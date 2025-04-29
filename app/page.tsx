@@ -9,6 +9,7 @@ import { ResultSection } from "./components/pages/ResultSection";
 import { Navigation } from "./components/pages/Navigation";
 import { useDrawingStore } from "./store/drawingStore";
 import { useGeneratedImageStore } from "./store/generatedImageStore";
+import { RotateCcw, ArrowLeft } from "lucide-react";
 
 type Step = "category" | "drawing" | "result";
 
@@ -172,19 +173,15 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen">
       <WordTransition
         isVisible={navigation.isTransitionActive}
         word={navigation.selectedWord || { display: "", prompt: "" }}
         onTransitionComplete={handleTransitionComplete}
       />
 
-      <div className="max-w-6xl mx-auto">
-        <Navigation
-          currentStep={navigation.step}
-          onBack={handleBack}
-          onReset={handleReset}
-        />
+      <div className="max-w-6xl mx-auto p-8">
+        <Navigation />
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -258,6 +255,30 @@ export default function Home() {
             {navigation.error}
           </section>
         )}
+
+        {/* Footer: Zurück und Neu starten Button immer unten mittig */}
+        <div className="fixed bottom-6 left-0 w-full flex justify-center pointer-events-none z-50">
+          <div className="flex gap-4 pointer-events-auto">
+            {navigation.step !== "category" && (
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white shadow-lg"
+                style={{ fontSize: 18 }}
+              >
+                <ArrowLeft className="w-6 h-6" />
+                Zurück
+              </button>
+            )}
+            <button
+              onClick={handleReset}
+              className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white shadow-lg"
+              style={{ fontSize: 18 }}
+            >
+              <RotateCcw className="w-6 h-6" />
+              Neu starten
+            </button>
+          </div>
+        </div>
       </div>
     </main>
   );

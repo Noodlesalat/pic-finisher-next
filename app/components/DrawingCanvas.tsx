@@ -243,7 +243,7 @@ export function DrawingCanvas({
             onEraserToggle={() => setIsEraser(!isEraser)}
           />
           <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
-            <span className="text-sm text-gray-900 dark:text-white">
+            <span className="text-lg text-gray-900 dark:text-white">
               Größe:
             </span>
             <input
@@ -254,7 +254,7 @@ export function DrawingCanvas({
               onChange={(e) => setBrushSize(Number(e.target.value))}
               className="w-32"
             />
-            <span className="text-sm text-gray-900 dark:text-white ml-1">
+            <span className="text-lg text-gray-900 dark:text-white ml-1">
               {brushSize}
             </span>
           </div>

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Image from "next/image";
 import "./globals.css";
+
+import hsLogo from "@/public/hs-fulda_logo_rechteckig_weiß_keinhintergrund_keineschutzzone_72ppi.png";
+import maglabLogo from "@/public/maglab_on-black.png";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +31,45 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="flex min-h-screen w-full items-center relative">
+          <div className="flex flex-col items-center justify-center w-48 pl-4">
+            <div className="relative w-full flex justify-center">
+              <Image
+                src={hsLogo}
+                alt="HS Fulda Logo"
+                className="h-[120px] w-auto object-contain drop-shadow-xl"
+                height={120}
+                priority
+                style={{
+                  position: "absolute",
+                  top: "-40px",
+                  left: 0,
+                  right: 0,
+                  margin: "0 auto",
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col">{children}</div>
+          <div className="flex flex-col items-center justify-center w-48 pr-4">
+            <div className="relative w-full flex justify-center">
+              <Image
+                src={maglabLogo}
+                alt="Maglab Logo"
+                className="h-[120px] w-auto object-contain drop-shadow-xl"
+                height={120}
+                priority
+                style={{
+                  position: "absolute",
+                  top: "-40px",
+                  left: 0,
+                  right: 0,
+                  margin: "0 auto",
+                }}
+              />
+            </div>
+          </div>
+        </div>
       </body>
     </html>
   );
