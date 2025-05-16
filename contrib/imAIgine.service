@@ -1,0 +1,14 @@
+[Unit]
+Description=pic-finisher-next
+
+[Service]
+EnvironmentFile=-/etc/default/pic-finisher-next
+ExecStart=/home/maglab/pic-finisher-next/contrib/start.sh
+WorkingDirectory=/home/maglab/pic-finisher-next
+LimitNOFILE=4096
+IgnoreSIGPIPE=false
+KillMode=process
+User=maglab
+
+[Install]
+WantedBy=multi-user.target

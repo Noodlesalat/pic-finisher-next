@@ -53,7 +53,7 @@ export function Toolbar({
       <div className="flex items-center gap-4">
         <label
           htmlFor="style-select"
-          className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap"
+          className="text-lg font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap"
         >
           Stil:
         </label>
@@ -61,7 +61,7 @@ export function Toolbar({
           id="style-select"
           value={selectedStyle}
           onChange={(e) => onStyleChange(e.target.value as Style)}
-          className="w-48 h-10 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white sm:text-sm"
+          className="w-48 h-10 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-lg"
         >
           {AVAILABLE_STYLES.map((style) => (
             <option key={style} value={style}>

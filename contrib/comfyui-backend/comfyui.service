@@ -1,0 +1,15 @@
+[Unit]
+Description=comfyui
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=comfyui
+WorkingDirectory=/home/srieger
+ExecStart=/home/srieger/start-comfyui.sh
+Restart=on-abort
+User=srieger
+#EnvironmentFile=/etc/sysconfig/comfyui.env
+
+[Install]
+WantedBy=multi-user.target
