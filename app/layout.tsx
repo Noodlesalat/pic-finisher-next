@@ -35,20 +35,20 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <div className="flex min-h-screen w-full items-center relative">
-          <div className="flex flex-col items-center justify-center w-48 pl-4">
+          <div className="flex flex-col items-center justify-center w-64 pl-4">
             <div className="relative w-full flex justify-center">
               <Image
                 src={hsLogo}
                 alt="HS Fulda Logo"
-                className="h-[120px] w-auto object-contain drop-shadow-xl"
-                height={120}
+                className="w-[240px] h-auto object-contain drop-shadow-xl rotate-270"
+                height={240}
                 priority
                 style={{
                   position: "absolute",
-                  top: "-40px",
-                  left: 0,
-                  right: 0,
-                  margin: "0 auto",
+                  bottom: "80px",
+                  left: "0%",
+                  transform: "translateX(-50%)",
+                  margin: "0",
                 }}
               />
             </div>
