@@ -132,6 +132,16 @@ export default function Home() {
     }
   };
 
+  const handleRedrawImage = async () => {
+    setNavigation((prev) => ({
+      ...prev,
+      isGenerating: true,
+      error: "",
+    }));
+
+    await handleDrawingComplete(navigation.drawing, navigation.selectedStyle);
+  };
+
   const handleReset = () => {
     const { clearDrawing } = useDrawingStore.getState();
     const { clearGeneratedImage } = useGeneratedImageStore.getState();
@@ -245,6 +255,7 @@ export default function Home() {
                   }));
                   handleDrawingComplete(navigation.drawing, style);
                 }}
+                onRedraw={handleRedrawImage}
               />
             )}
           </motion.div>
