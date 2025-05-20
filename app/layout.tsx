@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import Image from "next/image";
 import "./globals.css";
 
 import hsLogo from "@/public/hs-fulda_logo_rechteckig_weiß_keinhintergrund_keineschutzzone_72ppi.png";
 import maglabLogo from "@/public/maglab_on-black.png";
 
-const geistSans = Geist({
+// Lokale Fonts einbinden
+const geistSans = localFont({
+  src: "./fonts/geist-v1-latin-regular.woff2",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "./fonts/geist-mono-v1-latin-regular.woff2",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
