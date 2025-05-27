@@ -1,14 +1,19 @@
 "use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Category, Style, Background, AVAILABLE_STYLES } from "./types/prompts";
-import { WordTransition } from "./components/WordTransition";
-import { CategorySelection } from "./components/pages/CategorySelection";
-import { DrawingSection } from "./components/pages/DrawingSection";
-import { ResultSection } from "./components/pages/ResultSection";
-import { Navigation } from "./components/pages/Navigation";
-import { useDrawingStore } from "./store/drawingStore";
-import { useGeneratedImageStore } from "./store/generatedImageStore";
+import {
+  Category,
+  Style,
+  Background,
+  AVAILABLE_STYLES,
+} from "../types/prompts";
+import { WordTransition } from "../components/WordTransition";
+import { CategorySelection } from "../components/pages/CategorySelection";
+import { DrawingSection } from "../components/pages/DrawingSection";
+import { ResultSection } from "../components/pages/ResultSection";
+import { Navigation } from "../components/pages/Navigation";
+import { useDrawingStore } from "../store/drawingStore";
+import { useGeneratedImageStore } from "../store/generatedImageStore";
 import { RotateCcw, ArrowLeft } from "lucide-react";
 
 type Step = "category" | "drawing" | "result";
