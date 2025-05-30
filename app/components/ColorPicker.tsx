@@ -33,10 +33,10 @@ export function ColorPicker({
       <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
         <div className="relative w-8 h-8 group">
           <div
-            className={`w-8 h-8 rounded-md border-2 overflow-hidden transition-transform hover:scale-110 ${
+            className={`w-8 h-8 rounded-md border-4 overflow-hidden transition-transform hover:scale-110 ${
               color !== customColor && !QUICK_COLORS.some((qc) => qc === color)
-                ? "border-blue-500 scale-110"
-                : "border-gray-300 dark:border-gray-600"
+                ? "border-blue-600 scale-110"
+                : "border-gray-500 dark:border-gray-400"
             }`}
             style={{
               background:
@@ -55,10 +55,10 @@ export function ColorPicker({
           <button
             key={quickColor}
             onClick={() => onColorChange(quickColor)}
-            className={`w-8 h-8 rounded-md border-2 transition-all duration-200 transform hover:scale-110 active:scale-95 ${
+            className={`w-8 h-8 rounded-md border-4 transition-all duration-200 transform hover:scale-110 active:scale-95 ${
               color === quickColor
-                ? "border-blue-500 scale-110 shadow-lg"
-                : "border-gray-300 dark:border-gray-600 hover:border-blue-300"
+                ? "border-blue-600 scale-110 shadow-lg"
+                : "border-gray-500 dark:border-gray-400 hover:border-blue-400"
             }`}
             style={{
               backgroundColor: quickColor,
@@ -75,10 +75,10 @@ export function ColorPicker({
         {customColor && (
           <button
             onClick={() => onColorChange(customColor)}
-            className={`w-8 h-8 rounded-md border-2 transition-all duration-200 transform hover:scale-110 active:scale-95 ${
+            className={`w-8 h-8 rounded-md border-4 transition-all duration-200 transform hover:scale-110 active:scale-95 ${
               color === customColor
-                ? "border-blue-500 scale-110 shadow-lg"
-                : "border-gray-300 dark:border-gray-600 hover:border-blue-300"
+                ? "border-blue-600 scale-110 shadow-lg"
+                : "border-gray-500 dark:border-gray-400 hover:border-blue-400"
             }`}
             style={{
               backgroundColor: customColor,
