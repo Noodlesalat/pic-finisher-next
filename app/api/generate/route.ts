@@ -4,6 +4,10 @@ import { prompts } from "../../data/prompts";
 import { Category, Style } from "../../types/prompts";
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
+import fs from "fs/promises";
+import path from "path";
+import { getFormattedDateTime } from "../../../lib/dateUtils";
+import { sanitizePromptForFilename } from "../../../lib/stringUtils";
 
 interface GenerateRequest {
   base64Image: string;
@@ -32,6 +36,47 @@ function fixBase64Padding(base64String: string): string {
     return base64String + "=".repeat(4 - padding);
   }
   return base64String;
+}
+
+// Hilfsfunktion zum Speichern beider Bilder mit demselben Zeitstempel
+async function saveBothImages(
+  originalBase64: string,
+  aiBase64: string,
+  prompt: string
+) {
+  try {
+    const OUTPUT_DIR = path.join(process.cwd(), "public", "out");
+
+    // Stelle sicher, dass das Verzeichnis existiert
+    await fs.mkdir(OUTPUT_DIR, { recursive: true });
+
+    // Generiere Zeitstempel und Dateinamen
+    const dateTime = getFormattedDateTime();
+    const sanitizedPrompt = sanitizePromptForFilename(prompt);
+
+    const originalFilename = `${dateTime} - ${sanitizedPrompt} - original.jpg`;
+    const aiFilename = `${dateTime} - ${sanitizedPrompt} - ai.jpg`;
+
+    const originalFilePath = path.join(OUTPUT_DIR, originalFilename);
+    const aiFilePath = path.join(OUTPUT_DIR, aiFilename);
+
+    // Speichere Originalbild
+    const originalBase64Data = originalBase64.replace(
+      /^data:image\/\w+;base64,/,
+      ""
+    );
+    const originalImageBuffer = Buffer.from(originalBase64Data, "base64");
+    await fs.writeFile(originalFilePath, originalImageBuffer);
+
+    // Speichere KI-Bild
+    const aiImageBuffer = Buffer.from(aiBase64, "base64");
+    await fs.writeFile(aiFilePath, aiImageBuffer);
+
+    console.log(`Bilder gespeichert: ${originalFilename} und ${aiFilename}`);
+  } catch (error) {
+    console.error("Fehler beim Speichern der Bilder:", error);
+    // Fehler nicht weiterwerfen, da das Speichern optional ist
+  }
 }
 
 // Hilfsfunktion zum Validieren und Formatieren des Base64-Bildes
@@ -163,6 +208,9 @@ export async function POST(request: Request) {
     if (!base64ImageData || base64ImageData.length === 0) {
       throw new Error("Ungültige Base64-Bilddaten");
     }
+
+    // Speichere beide Bilder mit demselben Zeitstempel
+    await saveBothImages(base64Image, base64ImageData, word);
 
     return NextResponse.json({ imageUrl: base64ImageData });
   } catch (error) {

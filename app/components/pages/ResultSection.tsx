@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useGeneratedImageStore } from "../../store/generatedImageStore";
 import React from "react";
 import { Style } from "../../types/prompts";
+import { RefreshCw } from "lucide-react";
 
 interface Word {
   display: string;
@@ -16,6 +17,7 @@ interface ResultSectionProps {
   availableStyles: Style[];
   isGenerating: boolean;
   selectedWord: Word;
+  onRedraw: () => void;
 }
 
 export function ResultSection({
@@ -26,6 +28,7 @@ export function ResultSection({
   availableStyles,
   isGenerating,
   selectedWord,
+  onRedraw,
 }: ResultSectionProps) {
   const { generatedImage: storedImage, setGeneratedImage } =
     useGeneratedImageStore();
@@ -102,7 +105,7 @@ export function ResultSection({
                 </div>
               )}
             </div>
-            <div className="w-full max-w-xs">
+            <div className="w-full max-w-xs mt-4 flex flex-col gap-4">
               <select
                 value={currentStyle}
                 onChange={(e) => onStyleChange(e.target.value as Style)}
@@ -115,6 +118,16 @@ export function ResultSection({
                   </option>
                 ))}
               </select>
+
+              <button
+                onClick={onRedraw}
+                disabled={isGenerating}
+                className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ fontSize: 18 }}
+              >
+                <RefreshCw className="w-6 h-6" />
+                Neu generieren
+              </button>
             </div>
           </div>
         </motion.div>
