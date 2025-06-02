@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { ColorPicker } from "./ColorPicker";
+import { ColorPaletteSelector } from "./ColorPaletteSelector";
 import { BackgroundSelector } from "./BackgroundSelector";
+import { BrushSizeSelector } from "./BrushSizeSelector";
 import { Canvas } from "./Canvas";
 import { Toolbar } from "./Toolbar";
 import { useDrawingStore } from "../store/drawingStore";
-import { Style, Background, BackgroundType } from "../types/prompts";
+import { Style, Background } from "../types/prompts";
 
 interface DrawingCanvasProps {
   onDrawingComplete: (base64Image: string) => void;
@@ -16,13 +17,6 @@ interface DrawingCanvasProps {
   isGenerating: boolean;
 }
 
-const DEFAULT_BACKGROUNDS: Background[] = [
-  { type: "white", name: "Weiß", value: "#FFFFFF" },
-  { type: "black", name: "Schwarz", value: "#000000" },
-];
-
-const QUICK_COLORS = ["#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF"];
-
 export function DrawingCanvas({
   onDrawingComplete,
   selectedStyle,
@@ -32,42 +26,43 @@ export function DrawingCanvas({
   isGenerating,
 }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [color, setColor] = useState("#FFFFFF");
+  const [color, setColor] = useState("#000000");
   const [brushSize, setBrushSize] = useState(20);
   const [isEraser, setIsEraser] = useState(false);
+  const [backgrounds, setBackgrounds] = useState<Background[]>([]);
   const [history, setHistory] = useState<ImageData[]>([]);
   const [currentStep, setCurrentStep] = useState(-1);
-  const [customColor, setCustomColor] = useState<string | null>(null);
-  const [backgrounds, setBackgrounds] =
-    useState<Background[]>(DEFAULT_BACKGROUNDS);
 
   const { drawing: savedDrawing, setDrawing } = useDrawingStore();
 
   const handleColorChange = (newColor: string) => {
     setColor(newColor);
     setIsEraser(false);
-    if (!QUICK_COLORS.includes(newColor)) {
-      setCustomColor(newColor);
-    }
   };
 
-  // Lade die benutzerdefinierten Hintergründe
+  // Lade verfügbare Hintergründe
   useEffect(() => {
     const loadCustomBackgrounds = async () => {
-      try {
-        const response = await fetch("/api/backgrounds");
-        const customBackgrounds = await response.json();
-        setBackgrounds([
-          ...DEFAULT_BACKGROUNDS,
-          ...customBackgrounds.map((bg: string) => ({
-            type: "custom" as BackgroundType,
-            name: bg.split("/").pop()?.split(".")[0] || bg,
-            value: bg,
-          })),
-        ]);
-      } catch (error) {
-        console.error("Fehler beim Laden der Hintergründe:", error);
-      }
+      const backgroundList: Background[] = [
+        { type: "white", name: "Weiß", value: "#FFFFFF" },
+        { type: "black", name: "Schwarz", value: "#000000" },
+        {
+          type: "custom",
+          name: "Klassenzimmer",
+          value: "/backgrounds/Klassenzimmer.jpg",
+        },
+        { type: "custom", name: "Steppe", value: "/backgrounds/Steppe.jpg" },
+        {
+          type: "custom",
+          name: "Horizont Meer",
+          value: "/backgrounds/Horizont Meer.jpg",
+        },
+        { type: "custom", name: "Wiese", value: "/backgrounds/Wiese.jpg" },
+        { type: "custom", name: "Wüste", value: "/backgrounds/Wüste.jpg" },
+        { type: "custom", name: "Wald", value: "/backgrounds/Wald.jpg" },
+        { type: "custom", name: "Strand", value: "/backgrounds/Strand.jpg" },
+      ];
+      setBackgrounds(backgroundList);
     };
 
     loadCustomBackgrounds();
@@ -81,26 +76,59 @@ export function DrawingCanvas({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Sichere die aktuelle Zeichnung ohne Hintergrund
+    const currentImageData = ctx.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    // Erstelle einen temporären Canvas um die Zeichnung zu extrahieren
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext("2d");
+    if (!tempCtx) return;
+
+    // Kopiere die aktuelle Zeichnung
+    tempCtx.putImageData(currentImageData, 0, 0);
+
+    // Setze den neuen Hintergrund
     if (background.type === "custom") {
       const img = new window.Image();
       img.src = background.value;
       img.onload = () => {
+        // Zeichne den neuen Hintergrund
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Zeichne die bestehende Zeichnung darüber (mit Blending Mode)
+        ctx.globalCompositeOperation = "source-over";
+        ctx.drawImage(tempCanvas, 0, 0);
+
+        // Füge zur History hinzu
         const newImageData = ctx.getImageData(
           0,
           0,
           canvas.width,
           canvas.height
         );
-        setHistory([newImageData]);
-        setCurrentStep(0);
+        setHistory([...history, newImageData]);
+        setCurrentStep(currentStep + 1);
       };
     } else {
+      // Zeichne den farbigen Hintergrund
       ctx.fillStyle = background.value;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Zeichne die bestehende Zeichnung darüber
+      ctx.globalCompositeOperation = "source-over";
+      ctx.drawImage(tempCanvas, 0, 0);
+
+      // Füge zur History hinzu
       const newImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      setHistory([newImageData]);
-      setCurrentStep(0);
+      setHistory([...history, newImageData]);
+      setCurrentStep(currentStep + 1);
     }
   };
 
@@ -227,71 +255,69 @@ export function DrawingCanvas({
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="flex gap-4 items-center mb-4">
-        <div className="flex items-center gap-2">
-          <BackgroundSelector
-            backgrounds={backgrounds}
-            selectedBackground={selectedBackground}
-            onBackgroundChange={handleBackgroundChange}
-          />
-          <ColorPicker
+    <div className="flex gap-4 h-full">
+      {/* Linke Seite: Hintergrundauswahl */}
+      <div className="flex flex-col gap-4 w-64 flex-shrink-0">
+        <BackgroundSelector
+          backgrounds={backgrounds}
+          selectedBackground={selectedBackground}
+          onBackgroundChange={handleBackgroundChange}
+        />
+      </div>
+
+      {/* Mitte: Canvas und Toolbar */}
+      <div className="flex flex-col items-center gap-4 flex-1">
+        <div className="relative flex-shrink-0">
+          <Canvas
+            ref={canvasRef}
+            width={512}
+            height={512}
             color={color}
-            customColor={customColor}
-            onColorChange={handleColorChange}
+            brushSize={brushSize}
             isEraser={isEraser}
-            onEraserToggle={() => setIsEraser(!isEraser)}
           />
-          <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
-            <span className="text-lg text-gray-900 dark:text-white">
-              Größe:
-            </span>
-            <input
-              type="range"
-              min="10"
-              max="50"
-              value={brushSize}
-              onChange={(e) => setBrushSize(Number(e.target.value))}
-              className="w-32"
-            />
-            <span className="text-lg text-gray-900 dark:text-white ml-1">
-              {brushSize}
-            </span>
-          </div>
+          {isGenerating && (
+            <div className="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-white/10 dark:bg-black/10 rounded-lg">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto"></div>
+                <p className="mt-4 text-white text-lg">
+                  KI generiert dein Bild...
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="w-full flex-shrink-0">
+          <Toolbar
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onClear={handleClear}
+            onSave={handleSave}
+            canUndo={currentStep > 0}
+            canRedo={currentStep < history.length - 1}
+            selectedStyle={selectedStyle}
+            onStyleChange={onStyleChange}
+          />
         </div>
       </div>
 
-      <div className="relative">
-        <Canvas
-          ref={canvasRef}
-          width={512}
-          height={512}
-          color={color}
-          brushSize={brushSize}
-          isEraser={isEraser}
+      {/* Rechte Seitenleiste: Pinselgröße und Farbauswahl */}
+      <div className="flex flex-col gap-4 w-64 flex-shrink-0">
+        {/* Pinselgröße */}
+        <BrushSizeSelector
+          currentSize={brushSize}
+          onSizeChange={setBrushSize}
+          minSize={5}
+          maxSize={50}
         />
-        {isGenerating && (
-          <div className="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-white/10 dark:bg-black/10 rounded-lg">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto"></div>
-              <p className="mt-4 text-white text-lg">
-                KI generiert dein Bild...
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
 
-      <div className="flex items-center justify-between w-full mt-4">
-        <Toolbar
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          onClear={handleClear}
-          onSave={handleSave}
-          canUndo={currentStep > 0}
-          canRedo={currentStep < history.length - 1}
-          selectedStyle={selectedStyle}
-          onStyleChange={onStyleChange}
+        {/* Farbauswahl */}
+        <ColorPaletteSelector
+          selectedColor={color}
+          onColorChange={handleColorChange}
+          isEraser={isEraser}
+          onEraserToggle={() => setIsEraser(!isEraser)}
         />
       </div>
     </div>

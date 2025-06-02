@@ -26,21 +26,23 @@ export function DrawingSection({
   isGenerating,
 }: DrawingSectionProps) {
   return (
-    <section className="h-[calc(100vh-12rem)]">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
-        <h2 className="text-4xl font-semibold mb-4 text-center">
+    <section className="flex-1 flex flex-col min-h-0">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 flex-1 flex flex-col min-h-0">
+        <h2 className="text-2xl font-semibold mb-2 text-center">
           Zeichne: {selectedWord.display}
         </h2>
 
-        <div className="w-full max-w-2xl mx-auto">
-          <DrawingCanvas
-            onDrawingComplete={onDrawingComplete}
-            selectedStyle={selectedStyle}
-            selectedBackground={selectedBackground}
-            onStyleChange={onStyleChange}
-            onBackgroundChange={onBackgroundChange}
-            isGenerating={isGenerating}
-          />
+        <div className="flex-1 flex justify-center items-center min-h-0">
+          <div className="w-full max-w-5xl h-full flex flex-col justify-center">
+            <DrawingCanvas
+              onDrawingComplete={onDrawingComplete}
+              selectedStyle={selectedStyle}
+              selectedBackground={selectedBackground}
+              onStyleChange={onStyleChange}
+              onBackgroundChange={onBackgroundChange}
+              isGenerating={isGenerating}
+            />
+          </div>
         </div>
       </div>
     </section>
