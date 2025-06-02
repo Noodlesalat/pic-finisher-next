@@ -5,3 +5,10 @@ export interface ExplorerImageGroup {
   originalUrl?: string;
   aiUrl?: string;
 }
+
+export interface PrintData {
+  originalUrl: string;
+  aiUrl: string;
+  prompt: string;
+  dateTime: string;
+}

@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { ImageGroupList } from "@/app/components/explorer/ImageGroupList";
 import { ImageGroupDetail } from "@/app/components/explorer/ImageGroupDetail";
-import type { ExplorerImageGroup } from "@/app/types/explorer";
+import type { ExplorerImageGroup, PrintData } from "@/app/types/explorer";
+import { generatePrintHTML } from "@/app/components/explorer/PrintViewGenerator";
+import { Printer } from "lucide-react";
 
 export default function ExplorerPage() {
   const [imageGroups, setImageGroups] = useState<ExplorerImageGroup[]>([]);
@@ -43,6 +45,46 @@ export default function ExplorerPage() {
 
   const handleBackToList = () => {
     setSelectedGroupId(null);
+  };
+
+  const handlePrintImages = () => {
+    const selectedGroup = imageGroups.find((g) => g.id === selectedGroupId);
+
+    if (!selectedGroup || !selectedGroup.originalUrl || !selectedGroup.aiUrl) {
+      alert(
+        "Nicht alle Bilder für den Druck verfügbar. Es werden sowohl das Original- als auch das KI-Bild benötigt."
+      );
+      return;
+    }
+
+    // A4 Querformat Popup-Fenster
+    const printWindow = window.open(
+      "",
+      "_blank",
+      "width=1123,height=794,menubar=no,toolbar=no,location=no,status=no"
+    );
+    if (!printWindow) {
+      alert(
+        "Pop-ups sind blockiert. Bitte erlauben Sie Pop-ups für diese Seite, um drucken zu können."
+      );
+      return;
+    }
+
+    // Titel des Popup-Fensters leeren
+    printWindow.document.title = "";
+
+    const printData: PrintData = {
+      originalUrl: selectedGroup.originalUrl,
+      aiUrl: selectedGroup.aiUrl,
+      prompt: selectedGroup.prompt,
+      dateTime: selectedGroup.dateTime,
+    };
+
+    const printHTML = generatePrintHTML(printData);
+
+    printWindow.document.open();
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
   };
 
   if (isLoading) {
@@ -85,6 +127,19 @@ export default function ExplorerPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {selectedGroup ? `${selectedGroup.prompt}` : "Bildergalerie"}
           </h1>
+
+          {/* Drucken-Button - erscheint nur wenn eine Gruppe ausgewählt ist */}
+          {selectedGroup &&
+            selectedGroup.originalUrl &&
+            selectedGroup.aiUrl && (
+              <button
+                onClick={handlePrintImages}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm"
+              >
+                <Printer className="w-5 h-5" />
+                Drucken
+              </button>
+            )}
         </div>
       </header>
 
