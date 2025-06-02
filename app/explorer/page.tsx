@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { ImageGroupList } from "@/app/components/explorer/ImageGroupList";
 import { ImageGroupDetail } from "@/app/components/explorer/ImageGroupDetail";
 import type { ExplorerImageGroup } from "@/app/types/explorer";
-import { ArrowLeft } from "lucide-react";
 
 export default function ExplorerPage() {
   const [imageGroups, setImageGroups] = useState<ExplorerImageGroup[]>([]);
@@ -87,13 +85,6 @@ export default function ExplorerPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {selectedGroup ? `${selectedGroup.prompt}` : "Bildergalerie"}
           </h1>
-          <Link
-            href="/"
-            className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Zur Erstellung
-          </Link>
         </div>
       </header>
 
